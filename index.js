@@ -20,7 +20,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@dipchon
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
-        strict: true,
+        strict: false,
         deprecationErrors: true,
     }
 });
@@ -31,15 +31,25 @@ async function run() {
         // await client.connect();
 
         const db = client.db("blogs_data");
-        const collection = db.collection("all_blogs");
+        const blogCollection = db.collection("all_blogs");
+        const result = await blogCollection.createIndex({ "title": 'text' })
+
 
         app.get('/recent_blog', async (req, res) => {
-            const data = await collection.find().limit(6).toArray();
+            const data = await blogCollection.find().limit(6).toArray();
             res.send(data)
         })
+
         app.get('/allblog', async (req, res) => {
-            const data = await collection.find().toArray();
+            const data = await blogCollection.find().toArray();
             res.send(data)
+        })
+
+        app.get('/search/:pattern', async (req, res) => {
+            const pattern = req.params.pattern;
+            console.log(pattern)
+            const data=await blogCollection.find( { $text: { $search: pattern} } ).toArray()
+            res.send(data);
         })
 
         // Send a ping to confirm a successful connection
