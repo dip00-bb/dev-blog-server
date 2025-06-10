@@ -104,7 +104,21 @@ async function run() {
 
         }) 
         app.get('/user/wishlist', async (req,res)=>{
-            console.log("data rea")
+            const email=req.query.email;
+            const blogId=req.query.blogId; 
+
+            const existingWishList=await wishlistCollection.findOne({
+                email:email,
+                blogId:blogId
+            })
+            
+            if(existingWishList){
+                res.status(200).send({exist:true});
+            }else{
+                res.status(200).send({exist:false})
+            }
+                
+            
 
         })
 
