@@ -34,6 +34,7 @@ async function run() {
         const db = client.db("blogs_data");
         const blogCollection = db.collection("all_blogs");
         const commentCollection = db.collection('all_comments');
+        const wishlistCollection=db.collection('user_wishlist');
         // const result = await blogCollection.createIndex({ "title": 'text' })
 
 
@@ -94,7 +95,18 @@ async function run() {
                 res.status(500).send('Error updating document');
             }
         })
+        
+        app.post('/user/wishlist', async (req,res)=>{
+            const data = req.body.wishlistInformation;
+            console.log(data)
+            const result = await wishlistCollection.insertOne(data)
+            res.send(result)
 
+        }) 
+        app.get('/user/wishlist', async (req,res)=>{
+            console.log("data rea")
+
+        })
 
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
