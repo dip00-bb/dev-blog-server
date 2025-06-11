@@ -156,11 +156,19 @@ async function run() {
         app.get('/user/userWishlist', async (req, res) => {
             const email = req.query.email;
             console.log(email)
-            const data = await wishlistCollection.find({email: email}).toArray();
+            const data = await wishlistCollection.find({ email: email }).toArray();
             console.log(data)
             res.send(data)
         })
 
+        app.delete('/user/userWishlist/', async (req, res) => {
+            const id = req.query.id
+            const email = req.query.email
+            console.log(id, email)
+            const result = await wishlistCollection.deleteOne({ blogId: id, email: email });
+            console.log(result)
+            res.send(result)
+        })
 
     } finally {
 
