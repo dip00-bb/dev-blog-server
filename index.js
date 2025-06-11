@@ -10,7 +10,9 @@ const port = 3000 || process.env.PORT
 app.use(cors());
 app.use(express.json());
 
+const verifyFirebaseToken = async (req, res, next) => {
 
+}
 
 
 
@@ -34,7 +36,7 @@ async function run() {
         const db = client.db("blogs_data");
         const blogCollection = db.collection("all_blogs");
         const commentCollection = db.collection('all_comments');
-        const wishlistCollection=db.collection('user_wishlist');
+        const wishlistCollection = db.collection('user_wishlist');
         // const result = await blogCollection.createIndex({ "title": 'text' })
 
 
@@ -48,12 +50,35 @@ async function run() {
             res.send(data)
         })
 
+        // app.get('/search/:pattern', async (req, res) => {
+        //     const pattern = req.params.pattern;
+        //     console.log(pattern)
+        //     const data = await blogCollection.find({ $text: { $search: pattern } }).toArray()
+        //     res.send(data);
+        // })
+
         app.get('/search/:pattern', async (req, res) => {
-            const pattern = req.params.pattern;
-            console.log(pattern)
-            const data = await blogCollection.find({ $text: { $search: pattern } }).toArray()
-            res.send(data);
+
+            try {
+                const pattern = req.params.pattern;
+                console.log(pattern)
+                const data = await blogCollection.find({
+                    title: { $regex: pattern, $options: 'i' }
+
+                }).sort({ createdAt: -1 }).toArray()
+
+                return res.send(data)
+            } catch (error) {
+                res.send(error)
+            }
+
+
+
+
+
+            // res.send(data);
         })
+
 
         app.get('/blog/comment/:blogId', async (req, res) => {
             const uniqueBlogID = req.params.blogId;
@@ -77,7 +102,7 @@ async function run() {
 
         app.put('/blog/updateblog/:id', async (req, res) => {
             const data = req.body.blogData;
-            const id=req.params.id;
+            const id = req.params.id;
             console.log(data)
             console.log(id)
 
@@ -95,35 +120,48 @@ async function run() {
                 res.status(500).send('Error updating document');
             }
         })
-        
-        app.post('/user/wishlist', async (req,res)=>{
+
+        app.post('/user/wishlist', async (req, res) => {
             const data = req.body.wishlistInformation;
             console.log(data)
             const result = await wishlistCollection.insertOne(data)
             res.send(result)
 
-        }) 
-        app.get('/user/wishlist', async (req,res)=>{
-            const email=req.query.email;
-            const blogId=req.query.blogId; 
-
-            const existingWishList=await wishlistCollection.findOne({
-                email:email,
-                blogId:blogId
-            })
-            
-            if(existingWishList){
-                res.status(200).send({exist:true});
-            }else{
-                res.status(200).send({exist:false})
-            }
-                
-            
-
         })
 
-        // Send a ping to confirm a successful connection
-        // await client.db("admin").command({ ping: 1 });
+        app.get('/user/wishlist', async (req, res) => {
+            const email = req.query.email;
+            const blogId = req.query.blogId;
+
+            const existingWishList = await wishlistCollection.findOne({
+                email: email,
+                blogId: blogId
+            })
+
+            if (existingWishList) {
+                res.status(200).send({ exist: true });
+            } else {
+                res.status(200).send({ exist: false })
+            }
+        })
+
+
+        app.get('/feature_blog', async (req, res) => {
+            // const data = await blogCollection.find().limit(10).sort({details:1}).toArray();
+            const data = await blogCollection.find().toArray();
+
+            res.send(data)
+        })
+
+        app.get('/user/userWishlist', async (req, res) => {
+            const email = req.query.email;
+            console.log(email)
+            const data = await wishlistCollection.find({email: email}).toArray();
+            console.log(data)
+            res.send(data)
+        })
+
+
     } finally {
 
     }
