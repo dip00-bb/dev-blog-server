@@ -61,7 +61,6 @@ async function run() {
 
             try {
                 const pattern = req.params.pattern;
-                console.log(pattern)
                 const data = await blogCollection.find({
                     title: { $regex: pattern, $options: 'i' }
 
@@ -89,7 +88,6 @@ async function run() {
 
         app.post('/blog/comment', async (req, res) => {
             const data = req.body.commentorInfo;
-            console.log(data)
             const result = await commentCollection.insertOne(data)
             res.send(result)
         })
@@ -103,8 +101,6 @@ async function run() {
         app.put('/blog/updateblog/:id', async (req, res) => {
             const data = req.body.blogData;
             const id = req.params.id;
-            console.log(data)
-            console.log(id)
 
             try {
                 const result = await blogCollection.updateOne(
@@ -123,7 +119,6 @@ async function run() {
 
         app.post('/user/wishlist', async (req, res) => {
             const data = req.body.wishlistInformation;
-            console.log(data)
             const result = await wishlistCollection.insertOne(data)
             res.send(result)
 
@@ -155,18 +150,14 @@ async function run() {
 
         app.get('/user/userWishlist', async (req, res) => {
             const email = req.query.email;
-            console.log(email)
             const data = await wishlistCollection.find({ email: email }).toArray();
-            console.log(data)
             res.send(data)
         })
 
         app.delete('/user/userWishlist/', async (req, res) => {
             const id = req.query.id
             const email = req.query.email
-            console.log(id, email)
             const result = await wishlistCollection.deleteOne({ blogId: id, email: email });
-            console.log(result)
             res.send(result)
         })
 
