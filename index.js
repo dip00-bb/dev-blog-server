@@ -2,6 +2,9 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+const admin = require("firebase-admin");
+const decodedKey=Buffer.from(process.env.FB_SERVICE_KEY,'base64').toString('utf8')
+const serviceAccount = JSON.parse(decodedKey)
 const app = express()
 const port = 3000 || process.env.PORT
 
@@ -11,8 +14,26 @@ app.use(cors());
 app.use(express.json());
 
 const verifyFirebaseToken = async (req, res, next) => {
+    const authHeader = req.headers?.authorization;
 
-}
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).send({ message: 'unauthorize access' })
+    } else {
+        const token = authHeader.split(' ')[1]
+        try {
+            const decoded = await admin.auth().verifyIdToken(token);
+            req.decoded=decoded;
+            next()
+        } catch (error) {
+            return res.status(401).send({ message: 'unauthorize access' })
+        }
+    }
+
+ 
+} 
+
+
+
 
 
 
@@ -26,6 +47,13 @@ const client = new MongoClient(uri, {
         strict: true,
         deprecationErrors: true,
     }
+});
+
+
+
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
 });
 
 async function run() {
@@ -92,13 +120,13 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/blog/allblog', async (req, res) => {
+        app.post('/blog/addblog', verifyFirebaseToken, async  (req, res) => {
             const data = req.body.blogData;
             const result = await blogCollection.insertOne(data)
             res.send(result)
         })
 
-        app.put('/blog/updateblog/:id', async (req, res) => {
+        app.put('/blog/updateblog/:id',verifyFirebaseToken, async (req, res) => {
             const data = req.body.blogData;
             const id = req.params.id;
 
@@ -148,8 +176,12 @@ async function run() {
             res.send(data)
         })
 
-        app.get('/user/userWishlist', async (req, res) => {
+        app.get('/user/userWishlist', verifyFirebaseToken, async (req, res) => {
             const email = req.query.email;
+
+            if(email !== req.decoded.email){
+                return res.status(403).message({message:'forbidden access'})
+            }
             const data = await wishlistCollection.find({ email: email }).toArray();
             res.send(data)
         })
