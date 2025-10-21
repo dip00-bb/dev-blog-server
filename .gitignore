@@ -1,3 +1,5 @@
 .env
 .vercel
 firebaseKey.json
+/generated/prisma
+node_modules

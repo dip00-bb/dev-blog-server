@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model all_blogs {
+  id                String @id @default(auto()) @map("_id") @db.ObjectId
+  category          String
+  details           String
+  image             String
+  short_description String
+  title             String
+  uid               String
+
+  @@fulltext([title], map: "title_text")
+}
+
+model all_comments {
+  id               String @id @default(auto()) @map("_id") @db.ObjectId
+  author           String
+  blogID           String
+  comment          String
+  commentorEmail   String
+  commentorProfile String
+}
+
+model all_product {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  basePrice    String
+  category     String
+  description  String
+  discount     String
+  discountType String
+  gender       String
+  images       String[]
+  name         String
+  size         String[]
+  stock        String
+}
+
+model user_wishlist {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  blogId String
+  email  String
+}
