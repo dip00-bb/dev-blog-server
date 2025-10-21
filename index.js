@@ -95,16 +95,45 @@ async function run() {
             }
         })
 
+
+
+
+        // app.get('/allblog/:id', verifyFirebaseToken, async (req, res) => {
+        //     const email = req.query.email;
+        //     if (email !== req.decoded.email) {
+        //         return res.status(403).message({ message: 'forbidden access' })
+        //     }
+
+        //     const id = req.params.id;
+        //     const data = await blogCollection.findOne({ _id: new ObjectId(id) });
+        //     res.send(data)
+        // })
+
+
         app.get('/allblog/:id', verifyFirebaseToken, async (req, res) => {
             const email = req.query.email;
             if (email !== req.decoded.email) {
-                return res.status(403).message({ message: 'forbidden access' })
+                return res.status(403).send({ message: 'forbidden access' })
             }
 
             const id = req.params.id;
-            const data = await blogCollection.findOne({ _id: new ObjectId(id) });
-            res.send(data)
+            try {
+                const data = await prisma.all_blogs.findUnique({
+                    where: { id: id }
+                });
+                res.send(data)
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
         })
+
+
+
+
+
+
+
+
 
         app.get('/search/:pattern', async (req, res) => {
 
