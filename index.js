@@ -96,20 +96,6 @@ async function run() {
         })
 
 
-
-
-        // app.get('/allblog/:id', verifyFirebaseToken, async (req, res) => {
-        //     const email = req.query.email;
-        //     if (email !== req.decoded.email) {
-        //         return res.status(403).message({ message: 'forbidden access' })
-        //     }
-
-        //     const id = req.params.id;
-        //     const data = await blogCollection.findOne({ _id: new ObjectId(id) });
-        //     res.send(data)
-        // })
-
-
         app.get('/allblog/:id', verifyFirebaseToken, async (req, res) => {
             const email = req.query.email;
             if (email !== req.decoded.email) {
@@ -126,12 +112,6 @@ async function run() {
                 res.status(500).send({ error: error.message })
             }
         })
-
-
-
-
-
-
 
 
 
@@ -152,24 +132,47 @@ async function run() {
         })
 
 
+
         app.get('/blog/comment/:blogId', async (req, res) => {
-            const uniqueBlogID = req.params.blogId;
-            const comment = await commentCollection.find({ blogID: uniqueBlogID }).toArray();
-            res.send(comment)
+            try {
+                const uniqueBlogID = req.params.blogId;
+                const comment = await prisma.all_comments.findMany({
+                    where: { blogID: uniqueBlogID }
+                });
+                res.send(comment)
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
         })
+
 
 
         app.post('/blog/comment', async (req, res) => {
-            const data = req.body.commentorInfo;
-            const result = await commentCollection.insertOne(data)
-            res.send(result)
+            try {
+                const data = req.body.commentorInfo;
+                const result = await prisma.all_comments.create({
+                    data: data
+                })
+                res.send(result)
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
         })
 
+
         app.post('/blog/addblog', verifyFirebaseToken, async (req, res) => {
-            const data = req.body.blogData;
-            const result = await blogCollection.insertOne(data)
-            res.send(result)
+            try {
+                const data = req.body.blogData;
+                const result = await prisma.all_blogs.create({
+                    data: data
+                })
+                res.send({ acknowledged: true })
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
         })
+
+
 
         app.put('/blog/updateblog/:id', verifyFirebaseToken, async (req, res) => {
             const data = req.body.blogData;
@@ -190,28 +193,60 @@ async function run() {
             }
         })
 
+
+
         app.post('/user/wishlist', async (req, res) => {
-            const data = req.body.wishlistInformation;
-            const result = await wishlistCollection.insertOne(data)
-            res.send(result)
+            try {
+                const data = req.body.wishlistInformation;
 
-        })
-
-        app.get('/user/wishlist', async (req, res) => {
-            const email = req.query.email;
-            const blogId = req.query.blogId;
-
-            const existingWishList = await wishlistCollection.findOne({
-                email: email,
-                blogId: blogId
-            })
-
-            if (existingWishList) {
-                res.status(200).send({ exist: true });
-            } else {
-                res.status(200).send({ exist: false })
+                console.log("the data aswr", data)
+                // const result = await prisma.user_wishlist.create({
+                //     data
+                // })
+                res.send(data)
+            } catch (error) {
+                console.log(error)
+                res.status(500).send({ error: error.message })
             }
         })
+
+
+
+
+        app.get('/user/wishlist', async (req, res) => {
+            try {
+                const email = req.query.email;
+                const blogId = req.query.blogId;
+
+                const existingWishList = await prisma.user_wishlist.findFirst({
+                    where: {
+                        email: email,
+                        blogId: blogId
+                    }
+                })
+
+                if (existingWishList) {
+                    res.status(200).send({ exist: true });
+                } else {
+                    res.status(200).send({ exist: false })
+                }
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         app.get('/feature_blog', async (req, res) => {
