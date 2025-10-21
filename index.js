@@ -194,25 +194,6 @@ async function run() {
         })
 
 
-
-        app.post('/user/wishlist', async (req, res) => {
-            try {
-                const data = req.body.wishlistInformation;
-
-                console.log("the data aswr", data)
-                // const result = await prisma.user_wishlist.create({
-                //     data
-                // })
-                res.send(data)
-            } catch (error) {
-                console.log(error)
-                res.status(500).send({ error: error.message })
-            }
-        })
-
-
-
-
         app.get('/user/wishlist', async (req, res) => {
             try {
                 const email = req.query.email;
@@ -237,24 +218,34 @@ async function run() {
 
 
 
-
-
-
-
-
-
-
-
-
-
+        app.post('/user/wishlist', async (req, res) => {
+            try {
+                const data = req.body.wishlistInformation;
+                const result = await prisma.user_wishlist.create({
+                    data: {
+                        email: data.email,
+                        blogId: data.blogId,
+                    },
+                })
+                res.send(result)
+            } catch (error) {
+                console.log(error)
+                res.status(500).send({ error: error.message })
+            }
+        })
 
 
         app.get('/feature_blog', async (req, res) => {
-            // const data = await blogCollection.find().limit(10).sort({details:1}).toArray();
-            const data = await blogCollection.find().toArray();
-
-            res.send(data)
+            try {
+                const data = await prisma.all_blogs.findMany();
+                res.send(data)
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
         })
+
+
+
 
         app.get('/user/userWishlist', verifyFirebaseToken, async (req, res) => {
             const email = req.query.email;
@@ -266,12 +257,55 @@ async function run() {
             res.send(data)
         })
 
-        app.delete('/user/userWishlist/', async (req, res) => {
-            const id = req.query.id
-            const email = req.query.email
-            const result = await wishlistCollection.deleteOne({ blogId: id, email: email });
-            res.send(result)
+
+
+
+        app.get('/user/userWishlist', verifyFirebaseToken, async (req, res) => {
+            const email = req.query.email;
+
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
+            try {
+                const data = await prisma.user_wishlist.findMany({
+                    where: { email: email }
+                });
+                res.send(data)
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
         })
+
+
+
+
+        app.delete('/user/userWishlist/', async (req, res) => {
+            try {
+                const id = req.query.id
+                const email = req.query.email
+                const result = await prisma.user_wishlist.deleteMany({
+                    where: {
+                        blogId: id,
+                        email: email
+                    }
+                });
+                res.send(result)
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
+        })
+
+
+
+
+
+
+
+
+
+
+
 
     } finally {
 
