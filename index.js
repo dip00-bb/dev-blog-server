@@ -80,9 +80,19 @@ async function run() {
             }
         })
 
+        // app.get('/allblog', async (req, res) => {
+        //     const data = await blogCollection.find().toArray();
+        //     res.send(data)
+        // })
+
+
         app.get('/allblog', async (req, res) => {
-            const data = await blogCollection.find().toArray();
-            res.send(data)
+            try {
+                const data = await prisma.all_blogs.findMany();
+                res.send(data)
+            } catch (error) {
+                res.status(500).send({ error: error.message })
+            }
         })
 
         app.get('/allblog/:id', verifyFirebaseToken, async (req, res) => {
