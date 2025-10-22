@@ -67,6 +67,9 @@ async function run() {
         // const result = await blogCollection.createIndex({ "title": 'text' })
 
 
+        // routes here
+        const writerAiRouter = require('./routes/writerAi');
+        app.use('/writerai', writerAiRouter);
 
         app.get('/recent_blog', async (req, res) => {
             try {
@@ -295,14 +298,6 @@ async function run() {
                 res.status(500).send({ error: error.message })
             }
         })
-
-
-
-
-
-
-
-
 
 
 
