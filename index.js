@@ -74,6 +74,11 @@ async function run() {
         const blogSummarizeRouter = require('./routes/blogSummarize');
         app.use('/blogsummary', blogSummarizeRouter);
 
+
+        const userRouter = require('./routes/user')
+        app.use('/save-user', userRouter)
+
+
         app.get('/recent_blog', async (req, res) => {
             try {
                 const data = await prisma.all_blogs.findMany({
@@ -174,6 +179,7 @@ async function run() {
                 })
                 res.send({ acknowledged: true })
             } catch (error) {
+                console.log(error)
                 res.status(500).send({ error: error.message })
             }
         })

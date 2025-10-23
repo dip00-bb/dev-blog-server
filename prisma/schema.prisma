@@ -48,3 +48,8 @@ model user_wishlist {
   blogId String
   email  String
 }
+
+model users {
+  userId       String  @id @map("_id")
+  isSubscribed Boolean @default(false)
+}
