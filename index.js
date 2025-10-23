@@ -19,11 +19,7 @@ app.use(cors());
 const webhookRoutes = require('./routes/webhook');
 app.use('/webhook', express.raw({ type: 'application/json' }), webhookRoutes);
 
-app.use(express.json({
-    verify: (req, res, buf) => {
-        req.rawBody = buf;
-    },
-}));
+app.use(express.json());
 
 
 

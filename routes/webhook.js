@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-router.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/', async (req, res) => {
 
     console.log("I amd inside1")
 
