@@ -14,7 +14,18 @@ const port = 3000 || process.env.PORT
 // middle wares
 
 app.use(cors());
-app.use(express.json());
+
+
+const webhookRoutes = require('./routes/webhook');
+app.use('/webhook', express.raw({ type: 'application/json' }), webhookRoutes);
+
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    },
+}));
+
+
 
 const verifyFirebaseToken = async (req, res, next) => {
     const authHeader = req.headers?.authorization;
@@ -62,7 +73,6 @@ async function run() {
 
         const db = client.db("blogs_data");
         const blogCollection = db.collection("all_blogs");
-        const commentCollection = db.collection('all_comments');
         const wishlistCollection = db.collection('user_wishlist');
         // const result = await blogCollection.createIndex({ "title": 'text' })
 
@@ -78,6 +88,11 @@ async function run() {
         const userRouter = require('./routes/user')
         app.use('/save-user', userRouter)
 
+        const paymentRoute = require('./routes/payment');
+        app.use('/payment', paymentRoute);
+
+        const stripeSessionRoute = require('./routes/stripeSession');
+        app.use('/session', stripeSessionRoute);
 
         app.get('/recent_blog', async (req, res) => {
             try {
