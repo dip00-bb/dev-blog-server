@@ -71,6 +71,9 @@ async function run() {
         const writerAiRouter = require('./routes/writerAi');
         app.use('/writerai', writerAiRouter);
 
+        const blogSummarizeRouter = require('./routes/blogSummarize');
+        app.use('/blogsummary', blogSummarizeRouter);
+
         app.get('/recent_blog', async (req, res) => {
             try {
                 const data = await prisma.all_blogs.findMany({
