@@ -53,6 +53,8 @@ router.post('/create-checkout-session', async (req, res) => {
                 userId: data?.userId,
                 name: data?.name,
                 amountPaid: data?.amountPaid,
+                redirectUrlId:data?.blogId
+
             },
             success_url: `https://blog-website-724fe.web.app/payment-success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `https://blog-website-724fe.web.app/payment-cancel`,

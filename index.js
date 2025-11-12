@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 const decodedKey = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString('utf8')
 const serviceAccount = JSON.parse(decodedKey)
 const app = express()
-const port = 3000 || process.env.PORT
+const port = process.env.PORT || 3000
 
 // middle wares
 
@@ -73,12 +73,14 @@ async function run() {
         // const result = await blogCollection.createIndex({ "title": 'text' })
 
 
-        // routes here
+
+
+        // ai routes
         const writerAiRouter = require('./routes/writerAi');
         app.use('/writerai', writerAiRouter);
-
         const blogSummarizeRouter = require('./routes/blogSummarize');
         app.use('/blogsummary', blogSummarizeRouter);
+
 
 
         const userRouter = require('./routes/user')
@@ -90,51 +92,17 @@ async function run() {
         const stripeSessionRoute = require('./routes/stripeSession');
         app.use('/session', stripeSessionRoute);
 
-        app.get('/recent_blog', async (req, res) => {
-            try {
-                const data = await prisma.all_blogs.findMany({
-                    take: 8,
-                    // orderBy: { createdAt: 'desc' }
-                });
-                res.send(data)
-            } catch (error) {
-                res.status(500).send({ error: error.message })
-            }
-        })
 
-        // app.get('/allblog', async (req, res) => {
-        //     const data = await blogCollection.find().toArray();
-        //     res.send(data)
-        // })
+        // blog related routes
 
+        const allBlog = require('./routes/readBlog/getAllBlog')
+        app.use('/allblog', allBlog);
 
-        app.get('/allblog', async (req, res) => {
-            try {
-                const data = await prisma.all_blogs.findMany();
-                res.send(data)
-            } catch (error) {
-                res.status(500).send({ error: error.message })
-            }
-        })
+        const recentBlog = require('./routes/readBlog/getRecentBlog')
+        app.use('/recent_blog', recentBlog);
 
-
-        app.get('/allblog/:id', verifyFirebaseToken, async (req, res) => {
-            const email = req.query.email;
-            if (email !== req.decoded.email) {
-                return res.status(403).send({ message: 'forbidden access' })
-            }
-
-            const id = req.params.id;
-            try {
-                const data = await prisma.all_blogs.findUnique({
-                    where: { id: id }
-                });
-                res.send(data)
-            } catch (error) {
-                res.status(500).send({ error: error.message })
-            }
-        })
-
+        const singleBlog=require('./routes/readBlog/getSpecificBlog')
+        app.use('/allblog', verifyFirebaseToken, singleBlog);
 
 
         app.get('/search/:pattern', async (req, res) => {
@@ -167,8 +135,6 @@ async function run() {
             }
         })
 
-
-
         app.post('/blog/comment', async (req, res) => {
             try {
                 const data = req.body.commentorInfo;
@@ -180,7 +146,6 @@ async function run() {
                 res.status(500).send({ error: error.message })
             }
         })
-
 
         app.post('/blog/addblog', verifyFirebaseToken, async (req, res) => {
             try {
@@ -194,8 +159,6 @@ async function run() {
                 res.status(500).send({ error: error.message })
             }
         })
-
-
 
         app.put('/blog/updateblog/:id', verifyFirebaseToken, async (req, res) => {
             const data = req.body.blogData;
@@ -215,7 +178,6 @@ async function run() {
                 res.status(500).send('Error updating document');
             }
         })
-
 
         app.get('/user/wishlist', async (req, res) => {
             try {
@@ -239,8 +201,6 @@ async function run() {
             }
         })
 
-
-
         app.post('/user/wishlist', async (req, res) => {
             try {
                 const data = req.body.wishlistInformation;
@@ -257,7 +217,6 @@ async function run() {
             }
         })
 
-
         app.get('/feature_blog', async (req, res) => {
             try {
                 const data = await prisma.all_blogs.findMany();
@@ -266,9 +225,6 @@ async function run() {
                 res.status(500).send({ error: error.message })
             }
         })
-
-
-
 
         app.get('/user/userWishlist', verifyFirebaseToken, async (req, res) => {
             const email = req.query.email;
@@ -279,9 +235,6 @@ async function run() {
             const data = await wishlistCollection.find({ email: email }).toArray();
             res.send(data)
         })
-
-
-
 
         app.get('/user/userWishlist', verifyFirebaseToken, async (req, res) => {
             const email = req.query.email;
@@ -299,9 +252,6 @@ async function run() {
                 res.status(500).send({ error: error.message })
             }
         })
-
-
-
 
         app.delete('/user/userWishlist/', async (req, res) => {
             try {
